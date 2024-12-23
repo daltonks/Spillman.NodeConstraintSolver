@@ -35,7 +35,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
     protected abstract IReadOnlyList<TNodeOption> GetAllOptions(ref TNode node);
     protected abstract void GetNeighborKeys(TNodeKey key, List<TNodeKey> neighborKeys);
     
-    public void Update(ref TNodeKey key)
+    public void Update(TNodeKey key)
     {
         AppendDebugLine("####################################################################################");
         _setOfItemsInQueue = [];
