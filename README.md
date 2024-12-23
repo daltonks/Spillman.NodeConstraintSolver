@@ -6,7 +6,7 @@ This is currently a greedy implementation with no backtracking in the case of co
 
 Node options are solved using a priority-based system.
 
-Node propagation can naturally stop without traversing all nodes, making this efficient for updating specific nodes.
+Node propagation can naturally stop without traversing all nodes, making this efficient for updating specific nodes within a large space.
 
 An [example](src/Spillman.NodeConstraintSolver.Example/Program.cs) project can be found in this repository.
 
