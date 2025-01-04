@@ -171,6 +171,10 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
                         }
 
                         solvedByExistingNodeOptionList.Remove(nodeKey);
+                        if (solvedByExistingNodeOptionList.Count == 0)
+                        {
+                            _solvedByExistingNodeOption.Remove(nodeKey);
+                        }
                     }
                     
                     QueueNeighbors();
