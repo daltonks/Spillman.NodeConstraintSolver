@@ -4,10 +4,10 @@ using Spillman.NodeConstraintSolver.Util;
 
 namespace Spillman.NodeConstraintSolver;
 
-public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption> 
+public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption, TContext> 
     where TNodeKey : notnull 
     where TNode : INode<TNodeOption>
-    where TNodeOption : INodeOption<TNodeKey, TNode, TNodeOption>
+    where TNodeOption : INodeOption<TNodeKey, TNode, TNodeOption, TContext>
 {
     private static readonly ConcurrentObjectPool<List<TNodeOption>> NodeOptionsPool = new(
         () => [],
@@ -24,6 +24,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
     private Dictionary<TNodeKey, List<TNodeOption>> _allPossibilities = null!;
     private Dictionary<TNodeKey, List<TNodeKey>> _solvedByExistingNodeOption = null!;
     private HashSet<TNodeKey> _solved = null!;
+    private TContext _context = default!;
     
     #if DEBUG
     private readonly StringBuilder _debugStringBuilder = new();
@@ -35,9 +36,10 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
     protected abstract IReadOnlyList<TNodeOption> GetAllOptions(ref TNode node);
     protected abstract void GetNeighborKeys(TNodeKey key, List<TNodeKey> neighborKeys);
     
-    public void Update(TNodeKey key)
+    public void Update(TNodeKey key, TContext context)
     {
         AppendDebugLine("####################################################################################");
+        _context = context;
         _setOfItemsInQueue = [];
         _allPossibilities = new Dictionary<TNodeKey, List<TNodeOption>>();
         _solvedByExistingNodeOption = new Dictionary<TNodeKey, List<TNodeKey>>();
@@ -63,6 +65,8 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
             _debugStringBuilder.Clear();
         }
         #endif
+
+        _context = default;
     }
     
     private readonly List<TNodeOption> _possibilitiesToRemove = [];
@@ -297,7 +301,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
         return ConnectionResult.NoConnection;
     }
     
-    private static bool AreConstraintsSatisfied(
+    private bool AreConstraintsSatisfied(
         ref TNodeKey nodeKey,
         ref TNode node,
         ref TNodeOption nodeOption,
@@ -308,7 +312,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
         for (var i = 0; i < nodeOption.AllConstraints.Count; i++)
         {
             var constraint = nodeOption.AllConstraints[i];
-            if (!constraint.IsMet(ref nodeKey, ref node, ref otherNodeKey, ref otherNode, ref otherNodeOption))
+            if (!constraint.IsMet(ref nodeKey, ref node, ref otherNodeKey, ref otherNode, ref otherNodeOption, _context))
             {
                 return false;
             }
@@ -317,7 +321,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption>
         for (var i = 0; i < otherNodeOption.AllConstraints.Count; i++)
         {
             var otherConstraint = otherNodeOption.AllConstraints[i];
-            if (!otherConstraint.IsMet(ref otherNodeKey, ref otherNode, ref nodeKey, ref node, ref nodeOption))
+            if (!otherConstraint.IsMet(ref otherNodeKey, ref otherNode, ref nodeKey, ref node, ref nodeOption, _context))
             {
                 return false;
             }

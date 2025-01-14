@@ -1,6 +1,6 @@
 namespace Spillman.NodeConstraintSolver;
 
-public class NodeOptions<TNodeKey, TNode, TNodeOption> where TNodeOption : INodeOption<TNodeKey, TNode, TNodeOption>
+public class NodeOptions<TNodeKey, TNode, TNodeOption, TContext> where TNodeOption : INodeOption<TNodeKey, TNode, TNodeOption, TContext>
 {
     public NodeOptions(params TNodeOption[] options)
     {
