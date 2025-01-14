@@ -252,7 +252,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption, TContext>
         if (_solved.Contains(otherNodeKey))
         {
             return AreConstraintsSatisfied(
-                ref nodeKey, ref node, ref nodeOption, 
+                ref nodeKey, ref node, nodeOption, 
                 ref otherNodeKey, ref otherNode, otherNode.SelectedOption!
             ) 
                 ? ConnectionResult.ConnectedThroughSolvedNode 
@@ -265,7 +265,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption, TContext>
             {
                 var otherOption = otherOptionsList[i];
                 if (AreConstraintsSatisfied(
-                    ref nodeKey, ref node, ref nodeOption, 
+                    ref nodeKey, ref node, nodeOption, 
                     ref otherNodeKey, ref otherNode, otherOption))
                 {
                     return ConnectionResult.ConnectedThroughAllPossibilities;
@@ -277,7 +277,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption, TContext>
             if (otherNode.SelectedOption is not null)
             {
                 if (AreConstraintsSatisfied(
-                    ref nodeKey, ref node, ref nodeOption, 
+                    ref nodeKey, ref node, nodeOption, 
                     ref otherNodeKey, ref otherNode, otherNode.SelectedOption
                 ) )
                 {
@@ -290,7 +290,7 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption, TContext>
             {
                 var otherOption = otherOptions[i];
                 if (AreConstraintsSatisfied(
-                    ref nodeKey, ref node, ref nodeOption, 
+                    ref nodeKey, ref node, nodeOption, 
                     ref otherNodeKey, ref otherNode, otherOption))
                 {
                     return ConnectionResult.ConnectionPossible;
@@ -304,23 +304,25 @@ public abstract class ConstraintSolver<TNodeKey, TNode, TNodeOption, TContext>
     private bool AreConstraintsSatisfied(
         ref TNodeKey nodeKey,
         ref TNode node,
-        ref TNodeOption nodeOption,
+        TNodeOption nodeOption,
         ref TNodeKey otherNodeKey,
         ref TNode otherNode,
         TNodeOption otherNodeOption)
     {
-        for (var i = 0; i < nodeOption.AllConstraints.Count; i++)
+        var constraints = nodeOption.GetConstraints(ref nodeKey, ref otherNodeKey);
+        for (var i = 0; i < constraints.Count; i++)
         {
-            var constraint = nodeOption.AllConstraints[i];
+            var constraint = constraints[i];
             if (!constraint.IsMet(ref nodeKey, ref node, ref otherNodeKey, ref otherNode, ref otherNodeOption, _context))
             {
                 return false;
             }
         }
 
-        for (var i = 0; i < otherNodeOption.AllConstraints.Count; i++)
+        var otherConstraints = otherNodeOption.GetConstraints(ref otherNodeKey, ref nodeKey);
+        for (var i = 0; i < otherConstraints.Count; i++)
         {
-            var otherConstraint = otherNodeOption.AllConstraints[i];
+            var otherConstraint = otherConstraints[i];
             if (!otherConstraint.IsMet(ref otherNodeKey, ref otherNode, ref nodeKey, ref node, ref nodeOption, _context))
             {
                 return false;
